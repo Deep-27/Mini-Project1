@@ -51,10 +51,25 @@ const App = () => {
   };
 
   const handleAddChart = () => {
-    const newChart = { id: Date.now().toString(), type: 'line', title: 'New Chart', data: [] };
-    setCharts([...charts, newChart]);
-    setSelectedChart(newChart); // Set the newly added chart as the selected chart
+    // Prompt user for chart type and title
+    const type = prompt("Enter chart type (line, bar, pie):");
+    const title = prompt("Enter chart title:");
+  
+    // Validate chart type
+    if (type && ['line', 'bar', 'pie'].includes(type.toLowerCase())) {
+      // Prompt user for chart data
+      const dataString = prompt("Enter chart data points separated by commas:");
+      const data = dataString ? dataString.split(",").map(point => parseInt(point.trim())) : [];
+  
+      // Create new chart with user input
+      const newChart = { id: Date.now().toString(), type: type.toLowerCase(), title: title || 'New Chart', data };
+      setCharts([...charts, newChart]);
+      setSelectedChart(newChart); // Set the newly added chart as the selected chart
+    } else {
+      alert("Invalid chart type! Please enter 'line', 'bar', or 'pie'.");
+    }
   };
+  
   
 
   const handleDeleteChart = (id) => {
@@ -96,28 +111,29 @@ const App = () => {
           )}
         </div>
         <DragDropContext onDragEnd={onDragEnd}>
-  <Droppable droppableId="charts">
-    {(provided) => (
-               <ul className="grid grid-cols-3 gap-4" {...provided.droppableProps} ref={provided.innerRef}>
-                {charts && charts.map((chart, index) => ( // Added conditional check for charts
-                  <Draggable key={chart.id} draggableId={chart.id} index={index}>
-                    {(provided) => (
-                      <li
-                        className="bg-gray-200 p-4 rounded shadow-md"
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        ref={provided.innerRef}
-                      >
-                        <h2>{chart.title}</h2>
-                        <canvas id={chart.id} width="400" height="400"></canvas>
-                      </li>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-                </ul>
-    )}
-  </Droppable>
+        <Droppable droppableId="dashboard">
+  {(provided) => (
+    <ul className="grid grid-cols-3 gap-4" {...provided.droppableProps} ref={provided.innerRef}>
+      {charts.map((chart, index) => (
+        <Draggable key={chart.id} draggableId={chart.id} index={index}>
+          {(provided) => (
+            <li
+              className="bg-gray-200 p-4 rounded shadow-md"
+              {...provided.draggableProps}
+              {...provided.dragHandleProps}
+              ref={provided.innerRef}
+            >
+              <h2>{chart.title}</h2>
+              <canvas id={chart.id} width="400" height="400"></canvas>
+            </li>
+          )}
+        </Draggable>
+      ))}
+      {provided.placeholder}
+    </ul>
+  )}
+</Droppable>
+
 </DragDropContext>
         {selectedChart && (
           <div className="mt-4">
