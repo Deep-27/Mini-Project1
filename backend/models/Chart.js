@@ -1,10 +1,12 @@
 // models/Chart.js
-const mongoose = require('mongoose');
+const mongoose = require('../db');
 
 const chartSchema = new mongoose.Schema({
-  type: String,
-  title: String,
-  data: [mongoose.Schema.Types.Mixed]
+    type: String,
+    title: String,
+    data: [mongoose.Schema.Types.Mixed]
 });
 
-module.exports = mongoose.model('Chart', chartSchema);
+const Chart = mongoose.model('Chart', chartSchema);
+
+module.exports = Chart;
