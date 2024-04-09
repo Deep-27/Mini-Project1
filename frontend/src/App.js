@@ -51,31 +51,58 @@ const App = () => {
     setCharts(newCharts);
   };
 
+  const saveChart = async (chartData) => {
+    try {
+      const response = await fetch('/charts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(chartData)
+      });
+      if (response.ok) {
+        const newChart = await response.json();
+        setCharts([...charts, newChart]);
+        alert('Chart saved successfully!');
+      } else {
+        throw new Error('Failed to save chart');
+      }
+    } catch (error) {
+      console.error('Error saving chart:', error);
+      alert('Failed to save chart');
+    }
+  };
+
   const handleAddChart = () => {
-    // Prompt user for chart type and title
     const type = prompt("Enter chart type (line, bar, pie):");
     const title = prompt("Enter chart title:");
-  
-    // Validate chart type
+    const dataString = prompt("Enter chart data points separated by commas:");
+    const data = dataString ? dataString.split(",").map(point => parseInt(point.trim())) : [];
+
     if (type && ['line', 'bar', 'pie'].includes(type.toLowerCase())) {
-      // Prompt user for chart data
-      const dataString = prompt("Enter chart data points separated by commas:");
-      const data = dataString ? dataString.split(",").map(point => parseInt(point.trim())) : [];
-  
-      // Create new chart with user input
-      const newChart = { id: Date.now().toString(), type: type.toLowerCase(), title: title || 'New Chart', data };
-      setCharts([...charts, newChart]);
-      setSelectedChart(newChart); // Set the newly added chart as the selected chart
+      const newChart = { type: type.toLowerCase(), title: title || 'New Chart', data };
+      saveChart(newChart);
     } else {
       alert("Invalid chart type! Please enter 'line', 'bar', or 'pie'.");
     }
   };
-  
-  
 
-  const handleDeleteChart = (id) => {
-    setCharts(charts.filter((chart) => chart.id !== id));
-    setSelectedChart(null);
+  const handleDeleteChart = async (id) => {
+    try {
+      const response = await fetch(`/charts/${id}`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        setCharts(charts.filter((chart) => chart.id !== id));
+        setSelectedChart(null);
+        alert('Chart deleted successfully!');
+      } else {
+        throw new Error('Failed to delete chart');
+      }
+    } catch (error) {
+      console.error('Error deleting chart:', error);
+      alert('Failed to delete chart');
+    }
   };
 
   const handleTypeChange = (type) => {
@@ -87,7 +114,7 @@ const App = () => {
   };
 
   const handleDataChange = (e, index) => {
-    if (!selectedChart || !selectedChart.data) return; // Added additional check here
+    if (!selectedChart || !selectedChart.data) return;
     const newData = [...selectedChart.data];
     newData[index] = parseInt(e.target.value);
     setSelectedChart({ ...selectedChart, data: newData });
@@ -112,37 +139,36 @@ const App = () => {
           )}
         </div>
         <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="dashboard">
-  {(provided) => (
-    <ul className="grid grid-cols-3 gap-4" {...provided.droppableProps} ref={provided.innerRef}>
-      {charts.map((chart, index) => (
-        <Draggable key={chart.id} draggableId={chart.id} index={index}>
-          {(provided) => (
-            <li
-              className="bg-gray-200 p-4 rounded shadow-md"
-              {...provided.draggableProps}
-              {...provided.dragHandleProps}
-              ref={provided.innerRef}
-            >
-              <h2>{chart.title}</h2>
-              <canvas id={chart.id} width="400" height="400"></canvas>
-            </li>
-          )}
-        </Draggable>
-      ))}
-      {provided.placeholder}
-    </ul>
-  )}
-</Droppable>
-
-</DragDropContext>
+          <Droppable droppableId="dashboard">
+            {(provided) => (
+              <ul className="grid grid-cols-3 gap-4" {...provided.droppableProps} ref={provided.innerRef}>
+                {charts.map((chart, index) => (
+                  <Draggable key={chart.id} draggableId={chart.id} index={index}>
+                    {(provided) => (
+                      <li
+                        className="bg-gray-200 p-4 rounded shadow-md"
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        ref={provided.innerRef}
+                      >
+                        <h2>{chart.title}</h2>
+                        <canvas id={chart.id} width="400" height="400"></canvas>
+                      </li>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </ul>
+            )}
+          </Droppable>
+        </DragDropContext>
         {selectedChart && (
           <div className="mt-4">
             <h2 className="text-lg font-bold">Chart Customization</h2>
             <label className="block mt-2">Title:</label>
             <input className="bg-gray-200 px-4 py-2 rounded" type="text" value={selectedChart.title} onChange={handleTitleChange} />
             <label className="block mt-2">Data:</label>
-            {selectedChart.data && selectedChart.data.map((point, index) => ( // Added conditional check for selectedChart.data
+            {selectedChart.data && selectedChart.data.map((point, index) => (
               <input
                 key={index}
                 className="bg-gray-200 px-4 py-2 rounded mr-2 mb-2"

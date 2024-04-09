@@ -22,16 +22,16 @@ mongoose.connect('mongodb://localhost:27017/your-database-name', {
 
 // Route to create a new chart
 app.post('/charts', async (req, res) => {
-  try {
-    const { type, title, data } = req.body;
-    const newChart = new Chart({ type, title, data });
-    await newChart.save();
-    res.status(201).json(newChart);
-  } catch (err) {
-    console.error('Error creating chart:', err);
-    res.status(500).send('Internal Server Error');
-  }
-});
+    try {
+      const { type, title, data } = req.body;
+      const newChart = new Chart({ type, title, data });
+      await newChart.save();
+      res.status(201).json({ message: 'Chart saved successfully' });
+    } catch (err) {
+      console.error('Error creating chart:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
 
 // Route to update an existing chart
 app.put('/charts/:id', async (req, res) => {
