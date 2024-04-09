@@ -1,54 +1,42 @@
-// app.js
+// index.js or server.js
 
 const express = require('express');
 const mongoose = require('mongoose');
-const Chart = require('./models/chartModel');
+const Chart = require('./models/Chart');
 
 const app = express();
-const PORT = 3001;
-
-// Middleware
 app.use(express.json());
 
-// MongoDB connection
-mongoose.connect('mongodb://localhost:27017/your-database-name', {
+// Connect to MongoDB database
+mongoose.connect('mongodb://localhost:27017/MiniProject', {
   useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => {
-  console.log('MongoDB connected');
-}).catch((err) => {
-  console.error('MongoDB connection error:', err);
+  useUnifiedTopology: true,
 });
 
-// Route to create a new chart
-app.post('/charts', async (req, res) => {
-    try {
-      const { type, title, data } = req.body;
-      const newChart = new Chart({ type, title, data });
-      await newChart.save();
-      res.status(201).json({ message: 'Chart saved successfully' });
-    } catch (err) {
-      console.error('Error creating chart:', err);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-  });
+// Define schema for chart data
+const chartSchema = new mongoose.Schema({
+  type: String,
+  title: String,
+  data: Array,
+});
 
-// Route to update an existing chart
-app.put('/charts/:id', async (req, res) => {
+// Create a model based on the schema
+const Chart = mongoose.model('Chart', chartSchema);
+
+// Define route to save chart data
+app.post('/charts', async (req, res) => {
   try {
-    const { id } = req.params;
-    const { type, title, data } = req.body;
-    const updatedChart = await Chart.findByIdAndUpdate(id, { type, title, data }, { new: true });
-    res.status(200).json(updatedChart);
-  } catch (err) {
-    console.error('Error updating chart:', err);
-    res.status(500).send('Internal Server Error');
+    const chartData = req.body;
+    const chart = new Chart(chartData);
+    await chart.save();
+    res.status(201).json({ message: 'Chart saved successfully' });
+  } catch (error) {
+    console.error('Error saving chart:', error);
+    res.status(500).json({ error: 'Failed to save chart' });
   }
 });
 
-// Other routes...
-
-// Start server
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
