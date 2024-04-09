@@ -7,6 +7,7 @@ const App = () => {
     { id: 'line', type: 'line', title: 'Line Chart', data: [12, 19, 3, 5, 2, 3] },
     { id: 'bar', type: 'bar', title: 'Bar Chart', data: [10, 5, 20, 15, 30, 25] },
     { id: 'pie', type: 'pie', title: 'Pie Chart', data: [30, 10, 20] },
+    { id: 'scatter', type: 'scatter', title: 'Scatter Plot', data: [{ x: 10, y: 20 }, { x: 15, y: 10 }, { x: 25, y: 30 }] },
   ]);
 
   const [selectedChart, setSelectedChart] = useState(null);
